@@ -14,6 +14,9 @@
 #define m_step_count_down_time 4 // m_step_count_down_time*int_period[msec] count down timer to disable motor driver minimum time the stepper needs to perform one step keep it low to save current
 #define LEFT LOW
 #define RIGHT HIGH
+
+AccelStepper stepper(1, D3, D2); // type of stepper, step pin and dir pin
+
 //********************************************************
 int     steps = 0;      // # of steps to be performed
 int Periode   = 2000;   // [µsec] !!!  period time to next step
