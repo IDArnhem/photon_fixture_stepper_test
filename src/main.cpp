@@ -7,18 +7,35 @@
 
 // see config.h for WiFi credentials
 
-//AccelStepper stepper(1, D3, D2); // not used yet
+AccelStepper stepper(1, STEP_PIN, DIR_PIN); // not used yet
 
 void setup()
 { 
   Serial.begin(115200);
-  stepper_init();
+
+    stepper.setSpeed(0);
+
+//   stepper_init();
 }
 
 void loop()
 {
-  stepper_drive(LEFT, 20);
-  stepper_stop();
-  stepper_drive(RIGHT, 20);
-  stepper_stop();
+//   stepper_drive(LEFT, 20);
+//   stepper_stop();
+//   stepper_drive(RIGHT, 20);
+//   stepper_stop();
+
+// if (stepper.distanceToGo() == 0)
+//     {
+// 	// Random change to speed, position and acceleration
+// 	// Make sure we dont get 0 speed or accelerations
+// 	delay(1000);
+// 	stepper.moveTo(rand() % 200);
+// 	stepper.setMaxSpeed((rand() % 200) + 1);
+// 	stepper.setAcceleration((rand() % 200) + 1);
+//     }
+    // stepper.run();
+
+
+    stepper.runSpeed();
 }
