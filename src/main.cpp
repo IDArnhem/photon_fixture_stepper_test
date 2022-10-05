@@ -1,16 +1,22 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
+#include <WiFiUdp.h>
 #include <AccelStepper.h>
 #include <OSCMessage.h>
-#include <easywifi/easywifi.h>
+#include <easywifi.h>
 #include <config.h> // credentials and pin layouts
 #include <datstepper.h> // our own stepper library, ripped from the internet
 
 // see config.h for WiFi credentials
+WiFiUDP Udp;                                // A UDP instance to let us send and receive packets over UDP
+const IPAddress dest(192, 168, 8, 100);
+const unsigned int rxport = 54321;        // remote port to receive OSC
+const unsigned int txport = 12345;        // local port to listen for OSC packets (actually not used for sending)
+
 
 AccelStepper stepper(1, STEP_PIN, DIR_PIN); // not used yet
 
-void wifi_init() {
+void wifi_connect() {
   // connect to existing wifi access point as client
   if( wifi_connect_as_client(WIFI_SSID, WIFI_PASSWORD) ) {
     // print debugging information
@@ -28,9 +34,15 @@ void setup()
 { 
   Serial.begin(115200);
 
-    stepper.setSpeed(0);
+  wifi_connect();
 
-  wifi_init();
+  // listen for incoming OSC traffic
+  Udp.begin(rxport);
+
+  Serial.println("Starting UDP");
+  Serial.print("Local port: ");
+  Serial.println(Udp.localPort());
+
 //   stepper_init();
 }
 
@@ -42,27 +54,46 @@ void setup()
 // - set direction  L | R
 
 void on_moveto(OSCMessage &msg, int addrOffset) {
-  // here is where I have to put the code, to move the stepper to the given position
+  int pos;
+
+  if( msg.isInt(0) ) {
+    pos = msg.getInt(0);
+  } else {
+    pos = floor(msg.getFloat(0));
+  }
+
+  // @TODO here is where I have to put the code, to move the stepper to the given position
 }
 
+//  /spin <speed> <direction>
 void on_spin(OSCMessage &msg, int addrOffset) {
-  // here is where I have to put the code, to move the stepper to the given position
+  int speed, direction;
+  
+  if( msg.isInt(0) && msg.isInt(1) ) {
+    speed = msg.getInt(0);
+    direction = msg.getInt(1);
+  } else {
+    speed = floor(msg.getFloat(0));
+    direction = floor(msg.getFloat(1));
+  }
+
+  // @TODO now here goes the code to spin the motor in the given speed and direction
 }
 
 void on_stop(OSCMessage &msg, int addrOffset) {
-  // here is where I have to put the code, to move the stepper to the given position
+  // @TODO here is where I have to put the code, to move the stepper to the given position
 }
 
 void on_set_accel(OSCMessage &msg, int addrOffset) {
-  // here is where I have to put the code, to move the stepper to the given position
+  // @TODO here is where I have to put the code, to move the stepper to the given position
 }
 
 void on_set_speed(OSCMessage &msg, int addrOffset) {
-  // here is where I have to put the code, to move the stepper to the given position
+  // @TODO here is where I have to put the code, to move the stepper to the given position
 }
 
 void on_set_dir(OSCMessage &msg, int addrOffset) {
-  // here is where I have to put the code, to move the stepper to the given position
+  // @TODO here is where I have to put the code, to move the stepper to the given position
 }
 
 
@@ -99,8 +130,8 @@ void osc_message_pump() {
 
 void loop()
 {
-  osc_message_pump();
-  
+  // osc_message_pump();
+
 //   stepper_drive(LEFT, 20);
 //   stepper_stop();
 //   stepper_drive(RIGHT, 20);
