@@ -3,7 +3,7 @@
 
 // WiFi credentials
 #define WIFI_SSID "your ssid"
-#define WIFI_PASS "your pass"
+#define WIFI_PASSWORD "your pass"
 
 // stepper pin layout
 #define DIR_PIN D2
