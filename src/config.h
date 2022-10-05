@@ -5,4 +5,10 @@
 #define WIFI_SSID "your ssid"
 #define WIFI_PASS "your pass"
 
+// stepper pin layout
+#define DIR_PIN D2
+#define STEP_PIN D3
+#define ENABLE_PIN D4
+
+
 #endif // __CONFIG_H__
