@@ -47,11 +47,11 @@ void setup()
 }
 
 // things that we can do to the stepper:
-// - move to position
-// - spin continuously
+// - move to <position>
+// - spin continuously in <direction> at a <speed>
 // - change speed
 // - change acceleration
-// - set direction  L | R
+// - set direction  <L | R>
 
 void on_moveto(OSCMessage &msg, int addrOffset) {
   int pos;
