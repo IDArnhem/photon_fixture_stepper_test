@@ -1,15 +1,8 @@
 #include <Arduino.h>
-
-//#define BLYNK_PRINT Serial    // Comment this out to disable prints and save space
 #include <ESP8266WiFi.h>
-// You should get Auth Token in the Blynk App.
-// Go to the Project Settings (nut icon).
-char auth[] = "your auth";
+#include <AccelStepper.h>
 
-// Your WiFi credentials.
-// Set password to "" for open networks.
-char ssid[] = "your ssid";
-char pass[] = "your pass";
+// see config.h for WiFi credentials
 
 //*****************************************************
 #define DIR_PIN D2
