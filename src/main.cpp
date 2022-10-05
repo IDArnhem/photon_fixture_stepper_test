@@ -7,6 +7,8 @@
 
 // see config.h for WiFi credentials
 
+//AccelStepper stepper(1, D3, D2); // not used yet
+
 void setup()
 { 
   Serial.begin(115200);
