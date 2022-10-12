@@ -55,6 +55,7 @@ void setup()
 
 void on_moveto(OSCMessage &msg, int addrOffset) {
   int pos;
+  Serial.print("moveto message received");
 
   if( msg.isInt(0) ) {
     pos = msg.getInt(0);
@@ -62,13 +63,16 @@ void on_moveto(OSCMessage &msg, int addrOffset) {
     pos = floor(msg.getFloat(0));
   }
 
+
   // @TODO here is where I have to put the code, to move the stepper to the given position
+  stepper.moveTo(pos);
 }
 
 //  /spin <speed> <direction>
 void on_spin(OSCMessage &msg, int addrOffset) {
   int speed, direction;
-  
+  Serial.print("onspin message received");
+    
   if( msg.isInt(0) && msg.isInt(1) ) {
     speed = msg.getInt(0);
     direction = msg.getInt(1);
@@ -78,22 +82,55 @@ void on_spin(OSCMessage &msg, int addrOffset) {
   }
 
   // @TODO now here goes the code to spin the motor in the given speed and direction
+  stepper.setSpeed(speed);
+  //direction depends on wheter the value is under/above 0 
 }
 
 void on_stop(OSCMessage &msg, int addrOffset) {
+
   // @TODO here is where I have to put the code, to move the stepper to the given position
+  stepper.setMaxSpeed(0);
+  Serial.print("stop message received");
 }
 
 void on_set_accel(OSCMessage &msg, int addrOffset) {
+  int setAcc;
+
+  if( msg.isInt(0) ) {
+    setAcc = msg.getInt(0);
+  } else {
+    setAcc = floor(msg.getFloat(0));
+  }
+  Serial.print("set_accel message received");
   // @TODO here is where I have to put the code, to move the stepper to the given position
+  stepper.setAcceleration(setAcc);
 }
 
 void on_set_speed(OSCMessage &msg, int addrOffset) {
+  int setSpeed;
+
+  if( msg.isInt(0) ) {
+    setSpeed = msg.getInt(0);
+  } else {
+    setSpeed = floor(msg.getFloat(0));
+  }
+  Serial.print("on_speed message received");
+  
   // @TODO here is where I have to put the code, to move the stepper to the given position
+  stepper.setMaxSpeed(setSpeed);
 }
 
 void on_set_dir(OSCMessage &msg, int addrOffset) {
+  int dir;
+
+  if( msg.isInt(0) ) {
+    dir = msg.getInt(0);
+  } else {
+    dir = floor(msg.getFloat(0));
+  }
+  Serial.print("direction message received");
   // @TODO here is where I have to put the code, to move the stepper to the given position
+  //what do we need this for? direction is alresday set in continious movement
 }
 
 
@@ -109,6 +146,7 @@ void osc_message_pump() {
       in.fill( Udp.read() );
     }
 
+  
     if(!in.hasError()) {
       // check the address of the message to perform the action
       // address map:
@@ -130,7 +168,7 @@ void osc_message_pump() {
 
 void loop()
 {
-  // osc_message_pump();
+  osc_message_pump();
 
 //   stepper_drive(LEFT, 20);
 //   stepper_stop();
@@ -150,4 +188,5 @@ void loop()
 
 
     stepper.runSpeed();
+    stepper.run();
 }

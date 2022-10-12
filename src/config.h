@@ -2,8 +2,8 @@
 #define __CONFIG_H__
 
 // WiFi credentials
-#define WIFI_SSID "your ssid"
-#define WIFI_PASSWORD "your pass"
+#define WIFI_SSID "spectrum2000"
+#define WIFI_PASSWORD "goodlife"
 
 // stepper pin layout
 #define DIR_PIN D2
