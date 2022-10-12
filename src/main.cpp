@@ -11,9 +11,9 @@
 
 // see config.h for WiFi credentials
 WiFiUDP Udp;                                // A UDP instance to let us send and receive packets over UDP
-const IPAddress dest(192, 168, 8, 100);
 const unsigned int rxport = 54321;        // remote port to receive OSC
-const unsigned int txport = 12345;        // local port to listen for OSC packets (actually not used for sending)
+// const IPAddress dest(192, 168, 8, 100);
+// const unsigned int txport = 12345;        // local port to listen for OSC packets (actually not used for sending)
 
 
 AccelStepper stepper(1, STEP_PIN, DIR_PIN); // not used yet
