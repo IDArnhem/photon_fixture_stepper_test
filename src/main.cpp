@@ -3,6 +3,8 @@
 #include <WiFiUdp.h>
 #include <AccelStepper.h>
 #include <OSCMessage.h>
+#include <OSCBundle.h>
+#include <OSCData.h>
 #include <easywifi.h>
 #include <config.h> // credentials and pin layouts
 #include <datstepper.h> // our own stepper library, ripped from the internet
@@ -40,7 +42,7 @@ void setup()
   Udp.begin(rxport);
 
   Serial.println("Starting UDP");
-  Serial.print("Local port: ");
+  Serial.print("Listening on port: ");
   Serial.println(Udp.localPort());
 
 //   stepper_init();
@@ -53,9 +55,9 @@ void setup()
 // - change acceleration
 // - set direction  <L | R>
 
-void on_moveto(OSCMessage &msg, int addrOffset) {
+void on_moveto(OSCMessage &msg) {
   int pos;
-  Serial.print("moveto message received");
+  Serial.println("<-- moveto received");
 
   if( msg.isInt(0) ) {
     pos = msg.getInt(0);
@@ -69,9 +71,9 @@ void on_moveto(OSCMessage &msg, int addrOffset) {
 }
 
 //  /spin <speed> <direction>
-void on_spin(OSCMessage &msg, int addrOffset) {
+void on_spin(OSCMessage &msg) {
   int speed, direction;
-  Serial.print("onspin message received");
+  Serial.println("<-- spin received");
     
   if( msg.isInt(0) && msg.isInt(1) ) {
     speed = msg.getInt(0);
@@ -86,68 +88,72 @@ void on_spin(OSCMessage &msg, int addrOffset) {
   //direction depends on wheter the value is under/above 0 
 }
 
-void on_stop(OSCMessage &msg, int addrOffset) {
+void on_stop(OSCMessage &msg) {
 
   // @TODO here is where I have to put the code, to move the stepper to the given position
   stepper.setMaxSpeed(0);
-  Serial.print("stop message received");
+  Serial.println("<-- stop received");
 }
 
-void on_set_accel(OSCMessage &msg, int addrOffset) {
+void on_set_accel(OSCMessage &msg) {
   int setAcc;
+  Serial.println("<-- set_accel received");
 
   if( msg.isInt(0) ) {
     setAcc = msg.getInt(0);
   } else {
     setAcc = floor(msg.getFloat(0));
   }
-  Serial.print("set_accel message received");
   // @TODO here is where I have to put the code, to move the stepper to the given position
   stepper.setAcceleration(setAcc);
 }
 
-void on_set_speed(OSCMessage &msg, int addrOffset) {
+void on_set_speed(OSCMessage &msg) {
   int setSpeed;
+  Serial.println("<-- set_speed received");
 
   if( msg.isInt(0) ) {
     setSpeed = msg.getInt(0);
   } else {
     setSpeed = floor(msg.getFloat(0));
   }
-  Serial.print("on_speed message received");
   
   // @TODO here is where I have to put the code, to move the stepper to the given position
   stepper.setMaxSpeed(setSpeed);
 }
 
-void on_set_dir(OSCMessage &msg, int addrOffset) {
+void on_set_dir(OSCMessage &msg) {
   int dir;
+  Serial.println("<-- set_dir received");
 
   if( msg.isInt(0) ) {
     dir = msg.getInt(0);
   } else {
     dir = floor(msg.getFloat(0));
   }
-  Serial.print("direction message received");
   // @TODO here is where I have to put the code, to move the stepper to the given position
   //what do we need this for? direction is alresday set in continious movement
 }
 
 
 void osc_message_pump() {
-  OSCMessage in;
+  OSCBundle bundle;
   int size;
+  char addr[80];
 
   if( (size = Udp.parsePacket()) > 0)
   {
-    Serial.println("processing OSC package");
+    //Serial.println("(.) processing OSC package");
     // parse incoming OSC message
     while(size--) {
-      in.fill( Udp.read() );
+      bundle.fill( Udp.read() );
     }
-
   
-    if(!in.hasError()) {
+    if(!bundle.hasError()) {
+        // bundle.getAddress(addr);
+        // Serial.print("[!!] osc address -> ");
+        // Serial.println( String(addr) );
+
       // check the address of the message to perform the action
       // address map:
       //  - /moveto <position>
@@ -156,12 +162,16 @@ void osc_message_pump() {
       //  - /set_speed <speed>
       //  - /set_dir <direction>
       //  - /stop
-      in.route("/moveto", on_moveto);
-      in.route("/spin", on_spin);
-      in.route("/stop", on_stop);
-      in.route("/set_accel", on_set_accel);
-      in.route("/set_speed", on_set_speed);
-      in.route("/set_dir", on_set_dir);
+      bundle.dispatch("/moveto", on_moveto);
+      bundle.dispatch("/spin", on_spin);
+      bundle.dispatch("/stop", on_stop);
+      bundle.dispatch("/set_accel", on_set_accel);
+      bundle.dispatch("/set_speed", on_set_speed);
+      bundle.dispatch("/set_dir", on_set_dir);
+    } else {
+      OSCErrorCode error = bundle.getError();
+      Serial.print("[!!] osc err -> ");
+      Serial.println( error );
     }
   } // if
 }
