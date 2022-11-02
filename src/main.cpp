@@ -7,7 +7,6 @@
 #include <OSCData.h>
 #include <easywifi.h>
 #include <config.h> // credentials and pin layouts
-#include <datstepper.h> // our own stepper library, ripped from the internet
 
 // see config.h for WiFi credentials
 WiFiUDP Udp;                                // A UDP instance to let us send and receive packets over UDP
@@ -15,6 +14,8 @@ const unsigned int rxport = 54321;        // remote port to receive OSC
 // const IPAddress dest(192, 168, 8, 100);
 // const unsigned int txport = 12345;        // local port to listen for OSC packets (actually not used for sending)
 
+int currentSpeed = 100;
+int currentAccel = 50;
 
 AccelStepper stepper(1, STEP_PIN, DIR_PIN); // not used yet
 
@@ -44,8 +45,6 @@ void setup()
   Serial.println("Starting UDP");
   Serial.print("Listening on port: ");
   Serial.println(Udp.localPort());
-
-//   stepper_init();
 }
 
 // things that we can do to the stepper:
@@ -57,7 +56,6 @@ void setup()
 
 void on_moveto(OSCMessage &msg) {
   int pos;
-  Serial.println("<-- moveto received");
 
   if( msg.isInt(0) ) {
     pos = msg.getInt(0);
@@ -65,15 +63,19 @@ void on_moveto(OSCMessage &msg) {
     pos = floor(msg.getFloat(0));
   }
 
+  Serial.print( pos );
+  Serial.println(" <-- moveto received");
 
   // @TODO here is where I have to put the code, to move the stepper to the given position
   stepper.moveTo(pos);
+  //stepper.moveTo( random(0, 360) );
+  stepper.setMaxSpeed( currentSpeed );
+  stepper.setAcceleration( currentAccel );
 }
 
 //  /spin <speed> <direction>
 void on_spin(OSCMessage &msg) {
   int speed, direction;
-  Serial.println("<-- spin received");
     
   if( msg.isInt(0) && msg.isInt(1) ) {
     speed = msg.getInt(0);
@@ -82,6 +84,11 @@ void on_spin(OSCMessage &msg) {
     speed = floor(msg.getFloat(0));
     direction = floor(msg.getFloat(1));
   }
+
+  Serial.print( speed );
+  Serial.print( ", " );
+  Serial.print( direction );
+  Serial.println(" <-- spin received");
 
   // @TODO now here goes the code to spin the motor in the given speed and direction
   stepper.setSpeed(speed);
@@ -97,20 +104,23 @@ void on_stop(OSCMessage &msg) {
 
 void on_set_accel(OSCMessage &msg) {
   int setAcc;
-  Serial.println("<-- set_accel received");
 
   if( msg.isInt(0) ) {
     setAcc = msg.getInt(0);
   } else {
     setAcc = floor(msg.getFloat(0));
   }
+
+  Serial.print( setAcc );
+  Serial.println(" <-- set_accel received");
+
+  currentAccel = setAcc;
   // @TODO here is where I have to put the code, to move the stepper to the given position
-  stepper.setAcceleration(setAcc);
+  stepper.setAcceleration(currentAccel);
 }
 
 void on_set_speed(OSCMessage &msg) {
   int setSpeed;
-  Serial.println("<-- set_speed received");
 
   if( msg.isInt(0) ) {
     setSpeed = msg.getInt(0);
@@ -118,8 +128,13 @@ void on_set_speed(OSCMessage &msg) {
     setSpeed = floor(msg.getFloat(0));
   }
   
+  Serial.print( setSpeed );
+  Serial.println("<-- set_speed received");
+
+  currentSpeed = setSpeed;
+
   // @TODO here is where I have to put the code, to move the stepper to the given position
-  stepper.setMaxSpeed(setSpeed);
+  stepper.setMaxSpeed(currentSpeed);
 }
 
 void on_set_dir(OSCMessage &msg) {
@@ -131,15 +146,19 @@ void on_set_dir(OSCMessage &msg) {
   } else {
     dir = floor(msg.getFloat(0));
   }
+
+  Serial.print( dir );
+  Serial.println("<-- set_dir received");
+
   // @TODO here is where I have to put the code, to move the stepper to the given position
   //what do we need this for? direction is alresday set in continious movement
+  currentSpeed *= -1;
 }
-
 
 void osc_message_pump() {
   OSCBundle bundle;
   int size;
-  char addr[80];
+  //char addr[80];
 
   if( (size = Udp.parsePacket()) > 0)
   {
@@ -178,7 +197,19 @@ void osc_message_pump() {
 
 void loop()
 {
-  osc_message_pump();
+ osc_message_pump();
+
+
+    // if (stepper.distanceToGo() == 0)
+    // {
+    //   // Random change to speed, position and acceleration
+    //   // Make sure we dont get 0 speed or accelerations
+    //   delay(1000);
+    //   stepper.moveTo( random(0, 360) );
+    //   stepper.setMaxSpeed( 100 );
+    //   stepper.setAcceleration( 50 );
+    // }
+    // stepper.run();
 
 //   stepper_drive(LEFT, 20);
 //   stepper_stop();
@@ -197,6 +228,6 @@ void loop()
     // stepper.run();
 
 
-    stepper.runSpeed();
+    // stepper.runSpeed();
     stepper.run();
 }
